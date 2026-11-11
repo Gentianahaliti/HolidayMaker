@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MySqlConnector;
+using Microsoft.Extensions.Configuration;
 using HolidayMaker.Data;
 
 var configuration = new ConfigurationBuilder()
@@ -20,6 +21,18 @@ using var connection = database.GetConnection();
 try
 {
     await connection.OpenAsync();
+    string sql = "SELECT name, location FROM Hotels";
+
+using var command = new MySqlCommand(sql, connection);
+using var reader = await command.ExecuteReaderAsync();
+
+while (await reader.ReadAsync())
+{
+    string name = reader["name"].ToString() ?? "";
+    string location = reader["location"].ToString() ?? "";
+
+    Console.WriteLine($"{name} - {location}");
+}
     Console.WriteLine("Anslutningen till databasen fungerar!");
 }
 catch (Exception ex)
