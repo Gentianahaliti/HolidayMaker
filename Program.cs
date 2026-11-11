@@ -23,7 +23,7 @@ try
     await connection.OpenAsync();
 
     // Hämta kunder från databasen
-    string customerSql = "SELECT id, name FROM customers ORDER BY name";
+    string customerSql = "SELECT id, name FROM customers ORDER BY id";
 
     using var customerCommand = new MySqlCommand(customerSql, connection);
     using var customerReader = await customerCommand.ExecuteReaderAsync();
@@ -68,17 +68,37 @@ try
     Console.Write("Hur många personer ska bo i rummet? ");
     string input = Console.ReadLine() ?? "";
 
-    if (!int.TryParse(input, out int people))
+    if (!int.TryParse(input, out int people) || people <= 0)
     {
         Console.WriteLine("Ange ett giltigt antal personer.");
         return;
     }
 
+    // Ange incheckningsdatum
     Console.Write("Ange incheckningsdatum (ÅÅÅÅ-MM-DD): ");
-    DateTime startDate = Convert.ToDateTime(Console.ReadLine());
+    bool startDateValid = DateTime.TryParseExact(
+        Console.ReadLine(),
+        "yyyy-MM-dd",
+        System.Globalization.CultureInfo.InvariantCulture,
+        System.Globalization.DateTimeStyles.None,
+        out DateTime startDate
+    );
 
+    // Ange utcheckningsdatum
     Console.Write("Ange utcheckningsdatum (ÅÅÅÅ-MM-DD): ");
-    DateTime endDate = Convert.ToDateTime(Console.ReadLine());
+    bool endDateValid = DateTime.TryParseExact(
+        Console.ReadLine(),
+        "yyyy-MM-dd",
+        System.Globalization.CultureInfo.InvariantCulture,
+        System.Globalization.DateTimeStyles.None,
+        out DateTime endDate
+    );
+
+    if (!startDateValid || !endDateValid)
+    {
+        Console.WriteLine("Ogiltigt datum. Skriv datum i formatet ÅÅÅÅ-MM-DD.");
+        return;
+    }
 
     if (startDate.Year != 2026 || startDate.Month != 12 ||
         endDate.Year != 2026 || endDate.Month != 12 ||
