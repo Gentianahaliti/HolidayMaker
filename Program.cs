@@ -300,6 +300,7 @@ class Program
             SELECT
                 rooms.id,
                 Hotels.name,
+                Hotels.location,
                 Hotels.rating,
                 Hotels.distance_to_beach,
                 Hotels.distance_to_center,
@@ -337,7 +338,6 @@ class Program
                 SELECT 1
                 FROM bookings
                 WHERE bookings.room_id = rooms.id
-                AND bookings.cancelled = 0
                 AND bookings.start_date < @endDate
                 AND bookings.end_date > @startDate
             )
@@ -367,6 +367,7 @@ class Program
             {
                 Id = Convert.ToInt32(reader["id"]),
                 HotelName = reader["name"].ToString() ?? "",
+                Location = reader["location"].ToString() ?? "",
                 RoomNumber = Convert.ToInt32(reader["room_number"]),
                 Capacity = Convert.ToInt32(reader["capacity"]),
                 Price = Convert.ToDecimal(reader["price_per_night"]),
@@ -387,7 +388,8 @@ class Program
         foreach (var room in availableRooms)
         {
             Console.WriteLine(
-                $"ID: {room.Id} | {room.HotelName} | Rum {room.RoomNumber} | " +
+                $"ID: {room.Id} | {room.HotelName}, {room.Location} | " +
+                $"Rum {room.RoomNumber} | " +
                 $"{room.Capacity} personer | {room.Price} kr/natt | " +
                 $"Betyg: {room.Rating}");
         }
@@ -428,11 +430,27 @@ class Program
 
         try
         {
+            string lockRoomSql = @"
+                SELECT id
+                FROM rooms
+                WHERE id = @roomId
+                FOR UPDATE";
+
+            using var lockRoomCommand = new MySqlCommand(
+                lockRoomSql, connection, transaction);
+            lockRoomCommand.Parameters.AddWithValue("@roomId", roomId);
+
+            if (await lockRoomCommand.ExecuteScalarAsync() == null)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine("Rummet finns inte längre.");
+                return;
+            }
+
             string checkSql = @"
                 SELECT COUNT(*)
                 FROM bookings
                 WHERE room_id = @roomId
-                AND cancelled = 0
                 AND start_date < @endDate
                 AND end_date > @startDate";
 
@@ -456,10 +474,10 @@ class Program
             string insertSql = @"
                 INSERT INTO bookings
                 (customer_id, room_id, start_date, end_date,
-                 total_price, cancelled, number_of_occupants)
+                 total_price, number_of_occupants)
                 VALUES
                 (@customerId, @roomId, @startDate, @endDate,
-                 @totalPrice, 0, @people)";
+                 @totalPrice, @people)";
 
             using var insertCommand = new MySqlCommand(
                 insertSql, connection, transaction);
@@ -488,26 +506,25 @@ class Program
         }
     }
 
-    // Visar alla bokningar för den valda kunden.
+    // Visar alla aktiva bokningar för den valda kunden.
     static async Task ShowBookings(
         MySqlConnection connection,
         int customerId)
     {
         string sql = @"
-            SELECT
-                bookings.booking_number,
-                Hotels.name,
-                rooms.room_number,
-                bookings.start_date,
-                bookings.end_date,
-                bookings.number_of_occupants,
-                bookings.total_price,
-                bookings.cancelled
-            FROM bookings
-            JOIN rooms ON bookings.room_id = rooms.id
-            JOIN Hotels ON rooms.hotel_id = Hotels.id
-            WHERE bookings.customer_id = @customerId
-            ORDER BY bookings.start_date";
+        SELECT
+            bookings.booking_number,
+            Hotels.name,
+            rooms.room_number,
+            bookings.start_date,
+            bookings.end_date,
+            bookings.number_of_occupants,
+            bookings.total_price
+        FROM bookings
+        JOIN rooms ON bookings.room_id = rooms.id
+        JOIN Hotels ON rooms.hotel_id = Hotels.id
+        WHERE bookings.customer_id = @customerId
+        ORDER BY bookings.start_date";
 
         using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@customerId", customerId);
@@ -522,17 +539,13 @@ class Program
         {
             found = true;
 
-            string status = Convert.ToBoolean(reader["cancelled"])
-                ? "Avbokad"
-                : "Aktiv";
-
             Console.WriteLine(
                 $"Bokning {reader["booking_number"]} | " +
                 $"{reader["name"]} | Rum {reader["room_number"]} | " +
                 $"{Convert.ToDateTime(reader["start_date"]):yyyy-MM-dd} till " +
                 $"{Convert.ToDateTime(reader["end_date"]):yyyy-MM-dd} | " +
                 $"{reader["number_of_occupants"]} personer | " +
-                $"{reader["total_price"]} kr | {status}");
+                $"{reader["total_price"]} kr");
         }
 
         if (!found)
@@ -559,8 +572,7 @@ class Program
             FROM bookings
             JOIN rooms ON bookings.room_id = rooms.id
             WHERE bookings.booking_number = @bookingNumber
-            AND bookings.customer_id = @customerId
-            AND bookings.cancelled = 0";
+            AND bookings.customer_id = @customerId";
 
         using var command = new MySqlCommand(sql, connection);
 
@@ -591,8 +603,7 @@ class Program
             UPDATE bookings
             SET number_of_occupants = @people
             WHERE booking_number = @bookingNumber
-            AND customer_id = @customerId
-            AND cancelled = 0";
+            AND customer_id = @customerId";
 
         using var updateCommand = new MySqlCommand(updateSql, connection);
 
@@ -606,47 +617,47 @@ class Program
     }
 
     // Avbokar en bokning genom att ta bort den ur databasen.
-static async Task CancelBooking(
-    MySqlConnection connection,
-    int customerId)
-{
-    Console.Write("Ange bokningsnummer: ");
-
-    if (!long.TryParse(Console.ReadLine(), out long bookingNumber))
+    static async Task CancelBooking(
+        MySqlConnection connection,
+        int customerId)
     {
-        Console.WriteLine("Ogiltigt bokningsnummer.");
-        return;
-    }
+        Console.Write("Ange bokningsnummer: ");
 
-    Console.Write("Vill du verkligen avboka? (j/n): ");
+        if (!long.TryParse(Console.ReadLine(), out long bookingNumber))
+        {
+            Console.WriteLine("Ogiltigt bokningsnummer.");
+            return;
+        }
 
-    if (!ReadYesNo())
-    {
-        Console.WriteLine("Avbokningen avbröts.");
-        return;
-    }
+        Console.Write("Vill du verkligen avboka? (j/n): ");
 
-    string sql = @"
+        if (!ReadYesNo())
+        {
+            Console.WriteLine("Avbokningen avbröts.");
+            return;
+        }
+
+        string sql = @"
         DELETE FROM bookings
         WHERE booking_number = @bookingNumber
         AND customer_id = @customerId";
 
-    using var command = new MySqlCommand(sql, connection);
+        using var command = new MySqlCommand(sql, connection);
 
-    command.Parameters.AddWithValue("@bookingNumber", bookingNumber);
-    command.Parameters.AddWithValue("@customerId", customerId);
+        command.Parameters.AddWithValue("@bookingNumber", bookingNumber);
+        command.Parameters.AddWithValue("@customerId", customerId);
 
-    int rows = await command.ExecuteNonQueryAsync();
+        int rows = await command.ExecuteNonQueryAsync();
 
-    if (rows > 0)
-    {
-        Console.WriteLine("Bokningen har avbokats.");
+        if (rows > 0)
+        {
+            Console.WriteLine("Bokningen har avbokats.");
+        }
+        else
+        {
+            Console.WriteLine("Ingen bokning hittades.");
+        }
     }
-    else
-    {
-        Console.WriteLine("Ingen bokning hittades.");
-    }
-}
 
     // Läser ett datum i formatet ÅÅÅÅ-MM-DD.
     static bool ReadDate(string label, out DateTime date)
@@ -676,6 +687,7 @@ class RoomOption
 {
     public int Id { get; set; }
     public string HotelName { get; set; } = "";
+    public string Location { get; set; } = "";
     public int RoomNumber { get; set; }
     public int Capacity { get; set; }
     public decimal Price { get; set; }

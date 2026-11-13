@@ -68,7 +68,6 @@ CREATE TABLE `bookings` (
     `start_date` DATE NOT NULL,
     `end_date` DATE NOT NULL,
     `total_price` DECIMAL(10,2) NOT NULL,
-    `cancelled` TINYINT(1) NOT NULL DEFAULT 0,
     `number_of_occupants` INT NOT NULL,
     PRIMARY KEY (`booking_number`),
     KEY `bookings_customers_id_fk` (`customer_id`),
