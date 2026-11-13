@@ -1,85 +1,51 @@
-# Individual Reflection – Holiday Maker
+﻿# Individual Reflection – Holiday Maker
 
-## Work and Implementation
+## Technical Choices and What I Learned
 
-When I started this course about three weeks ago, I had no previous experience with databases or MySQL. I had to learn the basics while also working on the project, which was sometimes challenging.
+When I started this course, I had almost no experience with databases or MySQL. At first, it was difficult to understand how databases worked and how the different parts were connected. Comparing databases to Excel helped me understand the structure and made it easier to get started.
 
-At first, I found it difficult to understand how databases worked and how all the different parts fit together. Linus introduced the comparison between databases and Excel, where a schema is roughly like an Excel file, a table is like a sheet, and columns and rows work in a similar way. I kept this comparison in mind throughout the course because it helped me understand how information is organised and filtered.
+I started by learning SQL and practising how to create tables, add information and retrieve data. I also used the course book Studera SQL – prata med data to understand the different concepts.
 
-During the course, I practised using SQL to retrieve, filter, sort, add, update, and delete information. I also learned how JOIN can be used to combine information from several tables. The book *Studera SQL – prata med data* by Benjamin Berglund helped me understand relational databases, data types, keys, relationships, and data modelling. I found it useful to connect the explanations in the book to the practical work in my project.
+Working with Homenet also gave me another example to learn from and helped me understand how databases can be organised in different ways.
 
-I also worked with Homenet, a ready-made database that we downloaded as a ZIP file and used in MySQL. Through the exercises, I practised SQL queries and learned how to use Docker to run MySQL.
+One important decision was how to organise the database. I wanted the tables to have clear purposes and avoid storing the same information in several places. For example, I kept bookings in a separate table because one customer can have several bookings and the same room can be booked during different periods. This also makes it easier to connect customers, rooms and bookings using foreign keys.
 
-At the beginning of the project, I created an ER diagram together with my group. When I worked on my individual solution, I made several changes. I corrected the relationship between Hotels and Rooms so that a hotel can have zero or more rooms, while each room belongs to exactly one hotel. I also renamed distance_to_city to distance_to_center to make the name clearer.
+I used a junction table called hotel_x_amenities to connect Hotels and Amenities. I chose this solution because one hotel can have several amenities, and the same amenity can belong to several hotels. Without a junction table, the information would be more difficult to organise without repeating data.
 
-I removed is_booked and is_cancelled from the Bookings table. I considered is_booked unnecessary because each row already represents a booking. I removed is_cancelled because my program cancels a booking by deleting the booking row. I also removed the separate price table and stored the price directly in Rooms instead.
+I also made some changes to the original model. I changed distance_to_city to distance_to_center because it better matches the project requirements. I changed id_price_per_night to price_per_night and stored the price directly in the Rooms table instead of having a separate price table. For this project, I thought that was a simpler solution because each room has its own price and a separate table would add unnecessary complexity.
 
-One thing that took me time to understand was foreign keys and how they connect tables. I gradually understood that a foreign key refers to a primary key in another table. For example, the Rooms table contains a hotel ID that refers to the correct hotel in the Hotels table. Seeing how this worked in my own database made it easier to understand why these connections are important.
+I removed is_booked and is_cancelled from the Bookings table. Since each row already represents a booking, I did not think these extra columns were necessary. A room's availability can instead be determined by checking its bookings and dates. When a booking is cancelled, the booking can be deleted.
 
-I also learned about UNIQUE constraints. In my database, customer email addresses must be unique, so the same email address cannot be registered more than once. I also used a UNIQUE constraint for the combination of hotel ID and room number. This means that a hotel cannot have two rooms with the same room number, while different hotels can still use the same room number.
+I also used UNIQUE constraints for customer email addresses and room numbers within the same hotel. Together with foreign keys, these help protect the data from duplicates and invalid relationships. One thing that took me a while to understand was foreign keys. At first, I found them confusing, but working with my own database helped me understand why they are important.
 
-My database also uses a junction table between Hotels and Amenities. A hotel can have several amenities, and the same amenity can be available at several hotels. The junction table connects these tables without storing several amenities directly in Hotels. It also means that new amenities can be added without changing the structure of the Hotels table. This helped me understand many-to-many relationships and why information is separated into different tables.
+## Security, Results and Limitations
 
-I used SQL files to create the tables and insert test data. I then used DataGrip to check the tables and their contents. I also took part in a seminar presentation where I could compare my solution with other groups. One group had chosen to use four tables, while my database had more. This showed me that databases can be organised in different ways depending on how the information is structured.
+The result is a relational database connected to a C# console application. I used SQL JOIN queries to retrieve information from several tables when searching for hotels and rooms. I chose to let SQL handle much of the searching because the database can filter the information before it is returned to the application. The results can also be sorted by price or rating.
 
-I used DataGrip to work with the database, Docker to run MySQL, and MySqlConnector to connect my C# program to the database. I also used VS Code for the C# code, PowerShell for commands, and Git for version control. Gradually, I understood how these tools work together and what each one is used for.
+The application allows users to search using location, dates, number of people and different amenities. Users can also make bookings, view existing bookings, change the number of occupants and cancel bookings.
 
-## Results
+I tested the database connection and different search options, including location, dates, number of people and amenities such as a pool or restaurant. I also tested the booking functions, changing the number of occupants and cancelling a booking. I checked that the application rejected a number of occupants that was higher than the room's capacity and that a cancelled booking disappeared from the customer's booking list. I also restarted the application to check that bookings were still saved. Finally, I used dotnet build to make sure the project built without errors.
 
-The result was a console application where users can register or select a customer and search for available hotel rooms. They can search by location, dates, and number of people, filter by amenities and distance, and sort results by price or hotel rating.
+For security, I used parameterized SQL queries. This helps reduce the risk of SQL injection because user input is handled separately from the SQL command. The database constraints also help protect the information and keep relationships between tables correct.
 
-The program uses SQL queries and JOIN to retrieve information from several tables, such as hotels, rooms, capacity, price, and bookings. Users can also make bookings, view existing bookings, change the number of people, and cancel bookings.
-
-The program calculates the total price by multiplying the price per night by the number of nights. I also worked with the booking dates so that the checkout date does not count as a booked night. This means that a new booking can start on the same day that another booking ends.
-
-The program also contains a check for overlapping bookings. It checks whether a room is already booked during the selected period before saving a new booking. Understanding this logic helped me see why availability needs to be checked as part of the booking process.
-
-I think the result turned out well, considering that databases were completely new to me when the course started. The main features are in place, although there are still things I would like to improve.
-
-## Tests and Checks
-
-I tested the database connection, searches, filters, and sorting options. I also tested changing the number of people in a booking. Changing the number from two to one worked, while trying to enter three people in a room with a capacity of two was rejected.
-
-I also tested cancelling a booking and checked that it no longer appeared in the customer's bookings. After restarting the program, the other bookings were still saved. I also used dotnet build to check that the project compiled without errors.
-
-I used Copilot for support when I needed to understand the booking logic and how the program checks for overlapping dates.
-
-In DataGrip, I also ran a separate SQL query to find bookings for the same room with overlapping dates. The query found five pairs of overlapping bookings in the existing test data. This showed me how SQL can be used to check the database and find problems in the stored information.
-
-Through this work, I learned that it is important to check both that the program works as expected and that the database contains correct information.
-
-## Risks and Limitations
-
-One risk in a booking system is that the same room could be booked by several customers for overlapping dates. That is why the program checks availability before saving a booking. Another important check is room capacity, so that a room cannot be booked for more people than it can hold.
-
-The program uses parameterized SQL queries, where user input is sent separately from the SQL command. This helps reduce the risk of SQL injection.
-
-One limitation is that the program is a console application without a graphical interface. It is also designed for one operator at a time and does not have a login system or different user permissions.
-
-If I had had more time, I would have liked to develop access control and authentication further. Benjamin introduced us to these topics during the course, and I think they would be useful for making the system more secure.
-
-Another limitation is that the program only allows booking dates in December 2026, and the check-in date cannot be earlier than the current date.
+There are still limitations. The application is a console application without a graphical interface or user accounts with different access permissions. It is mainly designed for one person to use at a time, and the booking dates are limited to December 2026. These are things that could be improved in a more complete booking system.
 
 ## Improvements
 
-If I continued working on Holiday Maker, I would like to create a graphical interface and develop login and access control so that different users could have different permissions.
+Booking dates are an important part of the project because a room should not be available when it is already booked. If I continued working on the project, I would spend more time testing different overlapping booking situations, including cases where one booking period is completely inside another. I would also test that a new customer can check in on the previous customer's checkout date.
 
-I would also like to improve error handling and spend more time testing different booking situations, especially overlapping dates and availability checks.
+I would also like to improve the application with a graphical interface, login functionality and different user permissions. Another improvement would be clearer error messages so users understand what went wrong and what they need to do.
 
 ## Use of AI and Other Support
 
-During the project, I used ChatGPT and GitHub Copilot for support. Since databases were new to me, I often needed help understanding SQL, relationships, data types, and how the C# program communicates with the database.
+I used ChatGPT and GitHub Copilot as support during the project. Since databases were completely new to me, I used them when I got stuck or needed help understanding parts of the booking logic. From my previous course, I had already learned how important it is to double-check AI suggestions instead of just trusting them. I kept that in mind during this project and tried not to simply copy suggestions. I wanted to understand what the code did and why a solution worked.
 
-I also used Copilot to help me understand parts of the code, for example, the booking logic and how overlapping dates are checked. I used the explanations as support, but I still needed to read the code, understand the suggestions, and check that the program worked as intended.
-
-I did not want to simply copy suggestions from AI. I wanted to understand why something was needed and make sure it suited my project. I checked my work by reading the code, running SQL queries, testing the program, and building the project.
+I checked the suggestions by reading and understanding the code, running SQL queries, testing the application and building the project myself. This helped me make sure that the suggestions actually worked in my own solution.
 
 ## Conclusion
 
-When I think back to how I started the course three weeks ago, I feel that I have learned a lot in a short time. I went from having no experience with databases to creating tables, understanding relationships, using SQL, and connecting a database to a C# program.
+I have learned a lot during these three weeks. I went from having very little knowledge of databases to creating tables, understanding relationships, writing SQL queries and connecting a database to a C# application.
 
-At first, many things felt disconnected, but over time I started to understand how the database, SQL, and C# work together to retrieve, save, and update information.
+The biggest challenge was understanding how all the different parts worked together. Over time, things became clearer, especially when I could try them in my own project.
 
-I have tried to understand why the solutions work instead of just making them work. Working with the ER diagram, foreign keys, and booking logic helped me understand how database design affects the program.
-
-There is still a lot for me to learn, but I feel that this project has given me a good foundation for future courses and projects.
+I still have a lot to learn, but this project has given me a much better understanding of databases and a good foundation for future courses and projects.

@@ -4,12 +4,12 @@ Holiday Maker is a simple booking application built in C# that uses a MySQL data
 
 ## Requirements
 
-To run the application, you need:
+To set up and run the project, you need:
 
 - .NET 10 SDK
 - A MySQL server
-- A MySQL client, such as DataGrip or DVbeaver
-- Docker, if you want to run MySQL in a container
+- A MySQL client or another way to run the SQL setup files, such as DataGrip or DBeaver
+- Docker (optional), if you want to run MySQL in a container
 
 ## Database
 
@@ -64,7 +64,7 @@ The database contains tables for hotels, rooms, customers, bookings, and ameniti
 
 The ER diagram shows how the tables are related.
 
-![Holiday Maker ER diagram](holidaymaker-er-diagram.svg)
+![Holiday Maker ER diagram](ER_Diagram_After.svg)
 
 ## Manual test checklist
 
@@ -86,6 +86,6 @@ Run these tests against a separate test database. Check each box only after you 
 
 ## Submission
 
-The project contains the C# source code, the SQL files for the database and test data, and the `holidaymaker-er-diagram.svg` ER diagram.
+The project contains the C# source code, the SQL files for the database and test data, and the `ER_Diagram_After.svg` ER diagram.
 
 I will submit the individual reflection separately.

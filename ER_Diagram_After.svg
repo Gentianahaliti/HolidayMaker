@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080" role="img" aria-labelledby="title description">
+  <title id="title">Holiday Maker - current database ER diagram</title>
+  <desc id="description">Updated ER diagram in a DrawSQL-inspired style, based on the current MySQL schema.</desc>
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#e5e9ef"/>
+    </pattern>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#27364b" flood-opacity=".12"/>
+    </filter>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #526273; font-size: 15px; }
+      .table { fill: #fff; stroke: #d7dfe7; stroke-width: 1.2; filter: url(#shadow); }
+      .head { stroke: none; }
+      .head-label { font-size: 20px; font-weight: 700; }
+      .field { font-size: 15px; }
+      .type { font-size: 14px; fill: #9aa8b8; }
+      .key { font-weight: 700; fill: #405c72; }
+      .constraint { font-size: 12px; fill: #8493a3; }
+      .edge { fill: none; stroke: #9ba8b5; stroke-width: 2; }
+      .cardinality { font-size: 13px; font-weight: 700; fill: #718092; }
+      .legend { font-size: 13px; fill: #738295; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1080" fill="#fbfcfe"/>
+  <rect width="1600" height="1080" fill="url(#grid)"/>
+
+  <!-- Relationships: one parent can be related to zero or many child rows. -->
+  <path class="edge" d="M450 230 H600"/>
+  <text class="cardinality" x="462" y="218">1</text>
+  <text class="cardinality" x="566" y="218">0..*</text>
+
+  <path class="edge" d="M245 430 V690 Q245 700 255 700"/>
+  <text class="cardinality" x="258" y="449">1</text>
+  <text class="cardinality" x="258" y="682">0..*</text>
+
+  <path class="edge" d="M805 350 V475"/>
+  <text class="cardinality" x="818" y="370">1</text>
+  <text class="cardinality" x="818" y="462">0..*</text>
+
+  <path class="edge" d="M1365 370 V600"/>
+  <text class="cardinality" x="1378" y="390">1</text>
+  <text class="cardinality" x="1378" y="585">0..*</text>
+
+  <path class="edge" d="M480 840 H1050"/>
+  <text class="cardinality" x="493" y="828">1</text>
+  <text class="cardinality" x="1013" y="828">0..*</text>
+
+  <!-- Hotels -->
+  <g>
+    <rect class="table" x="50" y="90" width="400" height="340" rx="8"/>
+    <path class="head" d="M58 90 H442 Q450 90 450 98 V138 H50 V98 Q50 90 58 90Z" fill="#fbe8ef"/>
+    <text class="head-label" x="250" y="121" text-anchor="middle" fill="#a95476">Hotels</text>
+    <text class="field key" x="72" y="174">PK  id</text><text class="type" x="420" y="174" text-anchor="end">BIGINT AI</text>
+    <text class="field" x="72" y="208">name</text><text class="type" x="420" y="208" text-anchor="end">VARCHAR(100)</text>
+    <text class="field" x="72" y="242">location</text><text class="type" x="420" y="242" text-anchor="end">VARCHAR(100)</text>
+    <text class="field" x="72" y="276">distance_to_beach</text><text class="type" x="420" y="276" text-anchor="end">INT</text>
+    <text class="field" x="72" y="310">distance_to_center</text><text class="type" x="420" y="310" text-anchor="end">INT</text>
+    <text class="field" x="72" y="344">rating</text><text class="type" x="420" y="344" text-anchor="end">DECIMAL(2,1)</text>
+    <text class="constraint" x="72" y="393">CHECK: distances &gt;= 0; rating from 1 to 5</text>
+  </g>
+
+  <!-- Hotel and amenity junction table -->
+  <g>
+    <rect class="table" x="600" y="90" width="410" height="260" rx="8"/>
+    <path class="head" d="M608 90 H1002 Q1010 90 1010 98 V138 H600 V98 Q600 90 608 90Z" fill="#dff6fb"/>
+    <text class="head-label" x="805" y="121" text-anchor="middle" fill="#358a9a">hotel_x_amenities</text>
+    <text class="field key" x="622" y="174">PK  id</text><text class="type" x="980" y="174" text-anchor="end">BIGINT AI</text>
+    <text class="field key" x="622" y="208">FK  hotel_id</text><text class="type" x="980" y="208" text-anchor="end">BIGINT</text>
+    <text class="field key" x="622" y="242">FK  amenities_id</text><text class="type" x="980" y="242" text-anchor="end">BIGINT</text>
+    <text class="constraint" x="622" y="304">UNIQUE (hotel_id, amenities_id)</text>
+  </g>
+
+  <!-- Customers -->
+  <g>
+    <rect class="table" x="1180" y="90" width="370" height="280" rx="8"/>
+    <path class="head" d="M1188 90 H1542 Q1550 90 1550 98 V138 H1180 V98 Q1180 90 1188 90Z" fill="#eee7fb"/>
+    <text class="head-label" x="1365" y="121" text-anchor="middle" fill="#7560a3">customers</text>
+    <text class="field key" x="1202" y="174">PK  id</text><text class="type" x="1520" y="174" text-anchor="end">BIGINT AI</text>
+    <text class="field" x="1202" y="208">name</text><text class="type" x="1520" y="208" text-anchor="end">VARCHAR(80)</text>
+    <text class="field" x="1202" y="242">address</text><text class="type" x="1520" y="242" text-anchor="end">VARCHAR(100)</text>
+    <text class="field key" x="1202" y="276">email  UNIQUE</text><text class="type" x="1520" y="276" text-anchor="end">VARCHAR(150)</text>
+    <text class="field" x="1202" y="310">phone</text><text class="type" x="1520" y="310" text-anchor="end">VARCHAR(100)</text>
+  </g>
+
+  <!-- Amenities -->
+  <g>
+    <rect class="table" x="600" y="475" width="410" height="190" rx="8"/>
+    <path class="head" d="M608 475 H1002 Q1010 475 1010 483 V523 H600 V483 Q600 475 608 475Z" fill="#e2f5f2"/>
+    <text class="head-label" x="805" y="506" text-anchor="middle" fill="#438d88">Amenities</text>
+    <text class="field key" x="622" y="559">PK  id</text><text class="type" x="980" y="559" text-anchor="end">BIGINT AI</text>
+    <text class="field key" x="622" y="593">name  UNIQUE</text><text class="type" x="980" y="593" text-anchor="end">VARCHAR(50)</text>
+  </g>
+
+  <!-- Rooms -->
+  <g>
+    <rect class="table" x="50" y="700" width="430" height="300" rx="8"/>
+    <path class="head" d="M58 700 H472 Q480 700 480 708 V748 H50 V708 Q50 700 58 700Z" fill="#e8eafb"/>
+    <text class="head-label" x="265" y="731" text-anchor="middle" fill="#6473aa">rooms</text>
+    <text class="field key" x="72" y="784">PK  id</text><text class="type" x="450" y="784" text-anchor="end">BIGINT AI</text>
+    <text class="field" x="72" y="818">price_per_night</text><text class="type" x="450" y="818" text-anchor="end">DECIMAL(10,2)</text>
+    <text class="field" x="72" y="852">capacity</text><text class="type" x="450" y="852" text-anchor="end">INT</text>
+    <text class="field key" x="72" y="886">FK  hotel_id</text><text class="type" x="450" y="886" text-anchor="end">BIGINT</text>
+    <text class="field" x="72" y="920">room_number</text><text class="type" x="450" y="920" text-anchor="end">INT</text>
+    <text class="constraint" x="72" y="963">UNIQUE (hotel_id, room_number)</text>
+    <text class="constraint" x="72" y="983">CHECK: capacity &gt; 0; price_per_night &gt;= 0</text>
+  </g>
+
+  <!-- Bookings -->
+  <g>
+    <rect class="table" x="1050" y="600" width="500" height="370" rx="8"/>
+    <path class="head" d="M1058 600 H1542 Q1550 600 1550 608 V648 H1050 V608 Q1050 600 1058 600Z" fill="#e1f0fc"/>
+    <text class="head-label" x="1300" y="631" text-anchor="middle" fill="#387dad">bookings</text>
+    <text class="field key" x="1072" y="684">PK  booking_number</text><text class="type" x="1520" y="684" text-anchor="end">BIGINT AI</text>
+    <text class="field key" x="1072" y="718">FK  customer_id</text><text class="type" x="1520" y="718" text-anchor="end">BIGINT</text>
+    <text class="field key" x="1072" y="752">FK  room_id</text><text class="type" x="1520" y="752" text-anchor="end">BIGINT</text>
+    <text class="field" x="1072" y="786">start_date</text><text class="type" x="1520" y="786" text-anchor="end">DATE</text>
+    <text class="field" x="1072" y="820">end_date</text><text class="type" x="1520" y="820" text-anchor="end">DATE</text>
+    <text class="field" x="1072" y="854">total_price</text><text class="type" x="1520" y="854" text-anchor="end">DECIMAL(10,2)</text>
+    <text class="field" x="1072" y="888">number_of_occupants</text><text class="type" x="1520" y="888" text-anchor="end">INT</text>
+    <text class="constraint" x="1072" y="935">CHECK: end_date &gt; start_date; occupants &gt; 0</text>
+    <text class="constraint" x="1072" y="955">CHECK: total_price &gt;= 0</text>
+  </g>
+
+  <text class="legend" x="50" y="1040">PK = primary key · FK = foreign key · AI = auto increment · Hotels and Amenities are many-to-many through hotel_x_amenities.</text>
+</svg>
